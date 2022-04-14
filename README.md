@@ -32,7 +32,7 @@ optional arguments:
  -h, --help            show this help message and exit
  -k KEYWORD, --keyword KEYWORD
                         Specify any Job Keyword to search
-   -c COUNTRY, --country COUNTRY
+ -c COUNTRY, --country COUNTRY
                         Specify any Country to search for Job
 ```
 #### Examples:
@@ -49,6 +49,7 @@ python3 Scrape-n-shoot.py -k "Data Scientist" -c "Hydrabad, Telangana, India"
 ### TODO's:
 
 - [x] Scrape single domain from google using company name
+- [ ] Try to eleminate depending on os.system use re instead in beautify_text() method. 
 - [ ] Scrape Multiple domains from google with different tlds.
 - [ ] Verify the Scraped domain belongs to that respective company/organization.
 - [ ] Find a way to extract domains with all tld's which belongs to company/organization.
