@@ -1,8 +1,21 @@
-import requests, argparse, time, random, os, tldextract, re
+import requests, argparse, time, random, os, tldextract, re, datetime
+from difflib import Differ
 from bs4 import BeautifulSoup
 
+todays_date = datetime.date.today()
+beautify_file_var = f'{todays_date}-beautify-companies.txt'
+extracted_file_var = f'{todays_date}-extracted-companies.txt'
+
+
+def check_existing_domains():
+    with open('./completed-linkedin.txt') as file_1, open('./linkedin-domains.txt') as file_2:
+        differ = Differ()
+    for line in differ.compare(file_1.readlines(), file_2.readlines()):
+        print(line)
+    
+
 def domain_search():
-    file = open('./data/beautify-companies.txt','r')
+    file = open(f'./data/{beautify_file_var}','r')
     param_list = []
     param_list = file.readlines()
     file.close()
@@ -15,21 +28,24 @@ def domain_search():
         html = BeautifulSoup(resp1.text, 'html.parser')
         out = html.find('cite',attrs={'role':'text'}).text
         url = re.sub(r"\s+.*$","",out)
-        domain = tldextract.extract(f'{url}')
-        file = open('./Results/linkedin-domains.txt','a+')
-        file.write(".".join(domain[1:])+"\n")
+        domain_tld = tldextract.extract(f'{url}')
+        full_domain = ".".join(domain_tld[1:])
+        file = open('./linkedin-domains.txt','a+')
+        file.write(full_domain+"\n")
         file.close()
+    check_existing_domains()
 
 
-def beautify_text():    
-    cmd2 = 'awk "NF" ./data/extracted-companies.txt | sed -r s/\^\\\s+//g | sort -u |tee ./data/beautify-companies.txt'
+def beautify_text():  
+    # Try to use re to elimnate empty lines and unwanted spaces  
+    cmd2 = f'awk "NF" ./data/{extracted_file_var} | sed -r s/\^\\\s+//g | sort -u |tee ./data/{beautify_file_var}'
     os.system(cmd2)
 
 
 def linkedin_resp_parse(html_resp):
     html = BeautifulSoup(html_resp, 'html.parser')
     comp_tags = html.find_all('a', attrs={'class':'hidden-nested-link'})
-    file = open(f'./data/extracted-companies.txt','a+')
+    file = open(f'./data/{extracted_file_var}','a+')
     for i in comp_tags:
         comp_name = i.text.strip(" ")
         # print(comp_name)
@@ -56,7 +72,6 @@ def get_response(keyword,country):
     # file.write(resp.text)
     # file.close()
     linkedin_resp_parse(resp.text)
-    print(resp.status_code,resp.headers['Content-Length'])
 
     for i in range(25,1000,25):
         resp = req.get("https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search", \
